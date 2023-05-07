@@ -1,0 +1,63 @@
+-- Top 25 schools per student count
+SELECT COUNT(email_domain) AS num_of_students, email_domain AS school
+FROM users
+GROUP BY email_domain 
+ORDER BY COUNT(email_domain) DESC
+LIMIT 25;
+
+-- Listed all learners from New York
+SELECT COUNT(email_domain) AS learners
+FROM users
+WHERE city = "New York"
+
+-- Listed all students using mobile app
+SELECT COUNT(user_id) AS mobile_students
+FROM users 
+WHERE mobile_app = "mobile-user"
+
+-- Listed sign up counts for each hour.
+SELECT sign_up_at,
+   COUNT(strftime('%H', sign_up_at)) AS sign_up_count
+FROM users
+GROUP BY strftime('%H', sign_up_at)
+
+-- Joining two tables users and progress and
+-- created a new table from the merging
+CREATE TABLE merged AS
+SELECT users.email_domain, users.city,
+progress.learn_cpp, progress.learn_sql, progress.learn_html, 
+progress.learn_javascript, progress.learn_java
+FROM users
+INNER JOIN progress 
+ON users.user_id = progress.user_id;
+
+-- Q: Do different schools (.edu domains) prefer different courses?
+-- A: Grouping the students by their email domain and showing the sum of 
+their completed courses, show a preference
+SELECT email_domain, 
+    SUM(CASE WHEN learn_cpp = 'completed' THEN 1 ELSE NULL END) AS 
+cpp_completed,
+    SUM(CASE WHEN learn_sql = 'completed' THEN 1 ELSE NULL END) AS 
+sql_completed,
+    SUM(CASE WHEN learn_html = 'completed' THEN 1 ELSE NULL END) AS 
+html_completed,
+    SUM(CASE WHEN learn_javascript = 'completed' THEN 1 ELSE NULL END) AS 
+js_completed,
+    SUM(CASE WHEN learn_java = 'completed' THEN 1 ELSE NULL END) AS 
+java_completed
+FROM merged
+GROUP BY email_domain;
+
+-- Q: What courses are the New Yorkers students taking?
+-- A: People are taking either JS or SQL
+SELECT city, learn_cpp, learn_sql, learn_html, learn_javascript, 
+learn_java
+FROM merged
+WHERE city = "New York";
+
+-- Q: What courses are the Chicago students taking?
+-- A: It appears that they mostly take JavaScript
+SELECT city, learn_cpp, learn_sql, learn_html, learn_javascript, 
+learn_java
+FROM merged
+WHERE city = "Chicago";
